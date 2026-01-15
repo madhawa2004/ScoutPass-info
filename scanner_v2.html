@@ -3,100 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass V17 Pro</title>
+    <title>ScoutPass V18 (Cute UI)</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
         :root {
-            --primary: #4F46E5;
-            --primary-dark: #4338ca;
-            --bg-light: #F8FAFC;
-            --dark: #0F172A;
-            --glass: rgba(255, 255, 255, 0.95);
+            --primary: #6366f1;
+            --accent: #8b5cf6;
+            --bg-grad: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --dark: #1e293b;
         }
 
         body { 
-            background-color: var(--bg-light); 
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-grad);
+            font-family: 'Outfit', sans-serif;
             color: var(--dark);
             height: 100vh;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; overflow: hidden;
         }
 
-        /* HEADER */
-        .brand-title { color: var(--primary); font-weight: 800; letter-spacing: 1px; font-size: 1.4rem; margin-bottom: 2px; }
-        .brand-sub { font-size: 0.75rem; color: #64748b; margin-bottom: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        /* USER PILL (Top Email Display) */
+        .user-pill {
+            background: white; padding: 8px 20px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.85rem; font-weight: 700; color: #475569;
+            margin-bottom: 20px; animation: slideDown 0.5s ease;
+        }
+        .user-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 0 3px #dcfce7; }
 
-        /* CAMERA BOX */
+        /* HEADER */
+        .brand-title { 
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 800; letter-spacing: 1px; font-size: 1.8rem; margin-bottom: 5px;
+        }
+
+        /* CAMERA BOX (Cute Rounded) */
         .cam-wrapper {
             position: relative;
-            width: 100%; max-width: 380px; aspect-ratio: 1;
-            background: #000; border-radius: 28px; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.25);
-            margin-bottom: 20px; border: 4px solid white;
+            width: 100%; max-width: 360px; aspect-ratio: 1;
+            background: white; border-radius: 35px; overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(99, 102, 241, 0.3);
+            margin-bottom: 25px; border: 6px solid white;
         }
         #reader { width: 100%; height: 100%; }
-        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 24px; }
+        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 28px; }
 
-        /* CONTROLS */
-        .controls-wrapper { width: 100%; max-width: 380px; z-index: 10; }
+        /* CONTROLS CONTAINER */
+        .controls-wrapper { 
+            width: 100%; max-width: 360px; z-index: 10; 
+            background: var(--glass); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 30px; border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
         .control-row { display: flex; gap: 10px; margin-bottom: 12px; }
         
-        .btn-flash { background: white; color: var(--dark); border: none; width: 55px; border-radius: 16px; font-size: 1.2rem; transition:0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .btn-flash.active { background: #F59E0B; color: white; }
+        /* Buttons & Inputs */
+        .btn-flash { 
+            background: white; color: var(--dark); border: none; width: 55px; 
+            border-radius: 18px; font-size: 1.2rem; transition:0.2s; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: #fbbf24;
+        }
+        .btn-flash.active { background: #fbbf24; color: white; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4); }
 
         .form-select, .form-control {
-            border: 1px solid #E2E8F0; padding: 16px; border-radius: 16px; font-weight: 600;
-            font-size: 0.95rem; background: white; color: var(--dark);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            border: 2px solid transparent; padding: 14px; border-radius: 18px; font-weight: 600;
+            font-size: 0.9rem; background: white; color: var(--dark); transition: 0.3s;
         }
-        .form-select:focus, .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        .form-select:focus, .form-control:focus { 
+            outline: none; border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); 
+        }
         
         .btn-main {
-            background: var(--primary); color: white; width: 100%; padding: 18px;
-            border-radius: 18px; font-weight: 800; border: none;
-            text-transform: uppercase; letter-spacing: 0.5px; font-size: 1rem;
-            box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.4); margin-top: 10px;
-            transition: transform 0.1s;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; width: 100%; padding: 16px;
+            border-radius: 20px; font-weight: 800; border: none;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4); margin-top: 10px;
+            transition: transform 0.2s;
         }
-        .btn-main:active { transform: scale(0.98); background: var(--primary-dark); }
+        .btn-main:active { transform: scale(0.96); }
 
         /* FOOTER */
-        .footer-credit { margin-top: 25px; font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
-        .footer-credit span { color: var(--primary); font-weight: 700; }
-        .logout-btn { color: #EF4444; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 5px; text-decoration: none; opacity: 0.8; }
+        .footer-credit { margin-top: 25px; font-size: 0.7rem; color: #64748b; font-weight: 600; opacity: 0.8; }
+        .footer-credit span { color: var(--primary); font-weight: 800; }
+        .logout-btn { color: #ef4444; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
-        /* MODALS (Glassmorphism) */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
-        .modal-card { 
-            background: white; width: 100%; max-width: 360px; padding: 35px; 
-            border-radius: 30px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+        /* LOGIN MODAL */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(224, 231, 255, 0.8); 
+            backdrop-filter: blur(15px); z-index: 3000; 
+            display: none; align-items: center; justify-content: center; 
         }
-        
-        /* Specific Styles */
-        .badge-id { font-size: 1.1rem; padding: 8px 20px; border-radius: 50px; background: #0F172A; color: white; display: inline-block; margin-bottom: 25px; font-weight: 700; }
-        .details-box { background: #F8FAFC; padding: 20px; border-radius: 20px; margin: 10px 0 25px 0; text-align: left; font-size: 0.95rem; border: 1px solid #E2E8F0; }
-        .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .val { font-weight: 700; color: var(--dark); }
-        
-        .action-grid { display: grid; gap: 10px; margin-top: 15px; }
-        .btn-act { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
-        .bg-in { background: #10B981; } .bg-out { background: #EF4444; } .bg-done { background: #3B82F6; }
+        .modal-card { 
+            background: white; width: 90%; max-width: 340px; padding: 40px 30px; 
+            border-radius: 35px; text-align: center; 
+            box-shadow: 0 30px 60px -15px rgba(79, 70, 229, 0.2); 
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-        /* Login Modal Priority */
-        #loginModal { z-index: 3000; }
+        /* Result Modal Specifics */
+        .badge-id { 
+            font-size: 1.2rem; padding: 10px 25px; border-radius: 50px; 
+            background: var(--dark); color: white; display: inline-block; 
+            margin-bottom: 25px; font-weight: 700; letter-spacing: 1px;
+        }
+        .bg-in { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } 
+        .bg-out { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; } 
+        .bg-done { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
+    <div id="userPill" class="user-pill" style="display:none;">
+        <div class="user-dot"></div> <span id="userEmailDisplay">Connecting...</span>
+    </div>
+
     <div class="text-center">
         <div class="brand-title">SCOUTPASS</div>
-        <div class="brand-sub" id="userDisplay">System Initializing...</div>
+        <p class="small text-muted fw-bold">EVENT COMMANDER</p>
     </div>
 
     <div class="cam-wrapper"><div id="reader"></div></div>
@@ -110,51 +148,62 @@
         </div>
 
         <select class="form-select mb-3" id="eventSelect" onchange="setEvent()">
-            <option value="" disabled selected>Select Event</option>
+            <option disabled selected>Select Event</option>
         </select>
 
-        <input type="text" class="form-control mb-3" id="manualInput" placeholder="Enter ID Manually" autocomplete="off" name="scout_id_input_unique">
+        <form autocomplete="off" onsubmit="return false;">
+            <input autocomplete="false" name="hidden" type="text" style="display:none;">
+            <input type="text" class="form-control mb-3" id="manualInput" 
+                   placeholder="Enter ID Manually" 
+                   autocomplete="new-password" 
+                   name="unique_scout_id_field_v18">
+        </form>
 
         <button class="btn-main" onclick="manualSubmit()">
-            <i class="bi bi-qr-code-scan me-2"></i> SCAN / SUBMIT
+            <i class="bi bi-qr-code-scan me-2"></i> SCAN NOW
         </button>
 
         <div class="text-center">
-            <div class="footer-credit">Designed and Developed by <span>Madhawa Basnayake</span></div>
-            <div class="logout-btn" onclick="logout()">Logout Session</div>
+            <div class="footer-credit">Designed and Developed by <br><span>Madhawa Basnayake</span></div>
+            <div class="logout-btn" onclick="logout()">Logout</div>
         </div>
     </div>
 
     <div class="modal-overlay" id="loginModal">
-        <div class="modal-card animate__animated animate__fadeIn">
-            <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3.5rem;"></i>
-            <h3 class="fw-bold mb-4 mt-3">OFFICER LOGIN</h3>
+        <div class="modal-card">
+            <div class="mb-4">
+                <span style="font-size: 3rem;">👋</span>
+            </div>
+            <h3 class="fw-bold mb-2">Welcome Back</h3>
+            <p class="text-muted small mb-4">Please login to access the scanner</p>
             
             <div class="text-start mb-3">
-                <input type="email" id="loginEmail" class="form-control" placeholder="Officer Email">
+                <input type="email" id="loginEmail" class="form-control" placeholder="name@scout.lk">
             </div>
             <div class="text-start mb-4">
                 <input type="password" id="loginPass" class="form-control" placeholder="Password">
             </div>
             
-            <button class="btn-main mt-0" onclick="performLogin()">ACCESS SYSTEM</button>
+            <button class="btn-main mt-0 shadow-lg" onclick="performLogin()">LOGIN SYSTEM</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="scanModal">
-        <div class="modal-card animate__animated animate__zoomIn">
-            <div class="d-flex justify-content-center mb-3"><i class="bi bi-person-circle text-primary" style="font-size: 4rem;"></i></div>
+        <div class="modal-card">
+            <div class="d-flex justify-content-center mb-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" width="80" alt="User">
+            </div>
             
-            <h2 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h2>
+            <h3 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h3>
             <div class="badge-id" id="mID">...</div>
 
-            <div class="details-box" id="heavyDetails" style="display:none;">
-                <div class="d-row"><span class="text-muted fw-bold">Medical</span><span class="val text-danger" id="mMed">-</span></div>
-                <div class="d-row"><span class="text-muted fw-bold">Emergency</span><span class="val" id="mEmg">-</span></div>
-                <div class="d-row"><span class="text-muted fw-bold">Leader</span><span class="val" id="mLdr">-</span></div>
+            <div style="background: #F8FAFC; padding: 15px; border-radius: 20px; text-align: left; margin-bottom: 20px;" id="heavyDetails">
+                <div class="d-flex justify-content-between mb-2"><small class="fw-bold text-muted">Medical</small><b class="text-danger" id="mMed">-</b></div>
+                <div class="d-flex justify-content-between mb-2"><small class="fw-bold text-muted">Emergency</small><b id="mEmg">-</b></div>
+                <div class="d-flex justify-content-between"><small class="fw-bold text-muted">Leader</small><b id="mLdr">-</b></div>
             </div>
 
-            <div id="actionButtons" class="action-grid"></div>
+            <div id="actionButtons" style="display: grid; gap: 10px;"></div>
             <button class="btn btn-light text-muted w-100 mt-4 fw-bold py-3 rounded-4" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
@@ -165,7 +214,7 @@
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. MAIN DATABASE (Private)
+    // 1. MAIN DATABASE
     const mainConfig = { 
         apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", 
         authDomain: "scoutpassinfo.firebaseapp.com", 
@@ -176,7 +225,7 @@
         appId: "1:275495941550:web:516a5b1429dbf8d80e443f" 
     };
     
-    // 2. PARENT DATABASE (Public - Using Your Provided Config)
+    // 2. PARENT DATABASE
     const parentConfig = {
         apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90",
         authDomain: "scoutpass-2db.firebaseapp.com",
@@ -200,15 +249,16 @@
     let lastScanTime = 0;
     let loggedInUserEmail = "";
 
-    // --- SMART LOGIN ---
+    // --- AUTH ---
     onAuthStateChanged(auth, u => {
         if (u) {
             loggedInUserEmail = u.email;
-            document.getElementById('userDisplay').innerText = `Officer: ${u.email.split('@')[0]}`;
+            document.getElementById('userEmailDisplay').innerText = u.email;
+            document.getElementById('userPill').style.display = 'flex';
             document.getElementById('loginModal').style.display = 'none';
             initScanner();
         } else {
-            document.getElementById('userDisplay').innerText = "Auth Required";
+            document.getElementById('userPill').style.display = 'none';
             document.getElementById('loginModal').style.display = 'flex';
         }
     });
@@ -216,13 +266,22 @@
     window.performLogin = async () => {
         const e = document.getElementById('loginEmail').value;
         const p = document.getElementById('loginPass').value;
-        if (!e || !p) return Swal.fire('Wait', 'Credentials Required', 'warning');
+        if (!e || !p) return Swal.fire('Oops!', 'Please enter details', 'warning');
         try { await signInWithEmailAndPassword(auth, e, p); } 
-        catch (err) { Swal.fire('Error', 'Invalid Login', 'error'); }
+        catch (err) { Swal.fire('Error', 'Wrong email or password', 'error'); }
     };
 
     window.logout = () => {
-        if(confirm("Exit System?")) signOut(auth).then(()=>location.reload());
+        Swal.fire({
+            title: 'Logout?',
+            text: "You will need to login again",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#4F46E5',
+            confirmButtonText: 'Yes, Logout'
+        }).then((result) => {
+            if (result.isConfirmed) signOut(auth).then(()=>location.reload());
+        })
     };
 
     // --- CAMERA ---
@@ -256,8 +315,6 @@
     // --- EVENTS ---
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
-        const currentVal = sel.value;
-        // Placeholder fixed as requested
         sel.innerHTML = '<option value="" disabled selected>Select Event</option>';
         if(s.exists()) {
             Object.values(s.val()).forEach(evt => {
@@ -267,7 +324,6 @@
                     sel.appendChild(opt);
                 }
             });
-            if(currentVal && currentVal !== "") sel.value = currentVal;
         }
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
@@ -326,7 +382,7 @@
         }
     }
 
-    // --- DUAL WRITE (NOTIFICATIONS UPDATED) ---
+    // --- DUAL WRITE LOGIC ---
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
@@ -355,34 +411,37 @@
         parentUpdates[`public_history/${cleanID}/${histKey}`] = { event: currentEvent.name, action, time: timestamp };
 
         try {
-            // 1. MAIN DB
             await update(ref(dbMain), mainUpdates);
             
-            // Default: Main DB Success Only (RED)
-            let toastColor = '#dc2626'; 
-            let toastTitle = "Recorded (Main Only)";
-            let toastIcon = "warning";
-
+            // --- CUTE NOTIFICATIONS ---
+            let bg = '#F43F5E'; // Red-ish Pink
+            let title = 'Recorded (Main Only)';
+            
             try {
-                // 2. PARENT DB
                 await update(ref(dbParent), parentUpdates);
-                // Both Success (GREEN)
-                toastColor = '#16a34a'; 
-                toastTitle = "Synced to Both DBs";
-                toastIcon = "success";
-            } catch(e) { console.warn("Sync error"); }
+                bg = '#10B981'; // Nice Green
+                title = 'Perfectly Synced! ✨';
+            } catch(e) { console.warn("Parent Sync Error"); }
 
-            // NOTIFICATION (TOP)
             Swal.fire({
-                toast: true, position: 'top', icon: toastIcon, title: toastTitle,
-                timer: 1500, showConfirmButton: false,
-                background: toastColor, color: '#fff'
+                toast: true,
+                position: 'top',
+                title: title,
+                iconColor: 'white',
+                customClass: { popup: 'colored-toast' },
+                showConfirmButton: false,
+                timer: 1500,
+                background: bg,
+                color: '#fff',
+                didOpen: (toast) => {
+                    toast.style.borderRadius = '20px';
+                    toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+                }
             });
 
         } catch (e) {
-            Swal.fire({toast:true, position:'top', icon:'error', title:'Failed', text:'Main DB Error'});
+            Swal.fire({toast:true, position:'top', icon:'error', title:'Main DB Failed'});
         }
-        
         resume();
     }
 
@@ -393,7 +452,7 @@
     };
     window.closeModal = () => { document.getElementById('scanModal').style.display='none'; resume(); };
     function resume() { isProcessing=false; html5QrCode.resume(); }
-    window.logout = logout; window.switchCamera = switchCamera; window.performLogin = performLogin;
+    window.switchCamera = switchCamera; window.performLogin = performLogin; window.logout = logout;
 
     let isFlash = false;
     window.toggleFlash = () => {
