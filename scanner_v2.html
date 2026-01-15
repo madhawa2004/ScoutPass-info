@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass Scanner V12</title>
+    <title>ScoutPass Scanner V13</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -35,10 +35,10 @@
         /* CAMERA BOX (Full Clean View) */
         .cam-wrapper {
             position: relative;
-            width: 100%; max-width: 400px; aspect-ratio: 1; /* Perfectly Square */
+            width: 100%; max-width: 400px; aspect-ratio: 1;
             background: #000; border-radius: 30px; overflow: hidden;
             box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
-            margin-bottom: 25px; border: 0;
+            margin-bottom: 25px; border: 4px solid white;
         }
         #reader { width: 100%; height: 100%; }
         #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 30px; }
@@ -47,11 +47,11 @@
         .controls-wrapper { width: 100%; max-width: 400px; z-index: 10; }
         .control-row { display: flex; gap: 10px; margin-bottom: 15px; }
         
-        .btn-flash { background: #fff; color: var(--dark); border: 1px solid #e2e8f0; width: 55px; border-radius: 15px; font-size: 1.3rem; transition:0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .btn-flash { background: #fff; color: var(--dark); border: 2px solid #e2e8f0; width: 55px; border-radius: 15px; font-size: 1.3rem; transition:0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .btn-flash.active { background: #EAB308; color: white; border-color: #EAB308; }
 
         .form-select, .form-control {
-            border: 1px solid #e2e8f0; padding: 15px; border-radius: 15px; font-weight: 600;
+            border: 2px solid #e2e8f0; padding: 15px; border-radius: 15px; font-weight: 600;
             font-size: 1rem; background: white; color: var(--dark); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         .form-select:focus, .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
@@ -91,7 +91,7 @@
 
     <div class="text-center">
         <div class="brand-title">SCOUTPASS</div>
-        <div class="brand-sub" id="userDisplay">Connecting...</div>
+        <div class="brand-sub" id="userDisplay">Verifying...</div>
     </div>
 
     <div class="cam-wrapper">
@@ -145,7 +145,7 @@
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- 1. MAIN DATABASE CONFIG (Original/Private) ---
+    // --- 1. MAIN DATABASE (Internal - Scout Data & Logs) ---
     const mainConfig = { 
         apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", 
         authDomain: "scoutpassinfo.firebaseapp.com", 
@@ -156,7 +156,7 @@
         appId: "1:275495941550:web:516a5b1429dbf8d80e443f" 
     };
 
-    // --- 2. PARENT DATABASE CONFIG (New/Public) ---
+    // --- 2. PARENT DATABASE (Public - For Parents View) ---
     const parentConfig = {
         apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90",
         authDomain: "scoutpass-2db.firebaseapp.com",
@@ -173,24 +173,26 @@
 
     const dbMain = getDatabase(mainApp);
     const dbParent = getDatabase(parentApp);
-    const auth = getAuth(mainApp); // Auth is ONLY on Main
+    const auth = getAuth(mainApp); // Auth is always checked against Main DB
 
     let html5QrCode = null;
     let currentEvent = null;
     let isProcessing = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
+    let scannerEmail = "Guest";
 
-    // AUTH CHECK (On Main DB)
+    // AUTH CHECK
     onAuthStateChanged(auth, u => {
         if(!u) window.location.href="index.html";
         else {
+            scannerEmail = u.email;
             document.getElementById('userDisplay').innerText = u.email.split('@')[0];
             initScanner();
         }
     });
 
-    // --- CAMERA LOGIC ---
+    // CAMERA LOGIC
     async function initScanner() {
         try {
             const devices = await Html5Qrcode.getCameras();
@@ -221,7 +223,7 @@
         .catch(err => console.log(err));
     }
 
-    // --- EVENT LISTENER (From Main DB) ---
+    // EVENT LISTENER
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
         const currentVal = sel.value;
@@ -239,7 +241,7 @@
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
 
-    // --- SCAN HANDLER ---
+    // SCAN HANDLER
     async function onScanSuccess(decodedText) {
         if(isProcessing) return;
 
@@ -258,7 +260,7 @@
         const id = decodedText.trim().replace(/[.#$/[\]]/g, '_');
 
         try {
-            // Fetch Basic Info from Main DB (Source of Truth)
+            // Fetch Basic from Main DB
             const bSnap = await get(ref(dbMain, `scouts_basic/${id}`));
             if(!bSnap.exists()) throw new Error('ID Not Found');
             const basic = bSnap.val();
@@ -266,7 +268,6 @@
             document.getElementById('mName').innerText = basic.name;
             document.getElementById('mID').innerText = basic.id;
 
-            // Fetch Details if needed
             const dBox = document.getElementById('heavyDetails');
             if(currentEvent.mode === 'DETAILS') {
                 const dSnap = await get(ref(dbMain, `scouts_details/${id}`));
@@ -279,7 +280,6 @@
                 dBox.style.display = 'none';
             }
 
-            // Buttons
             const btnBox = document.getElementById('actionButtons'); btnBox.innerHTML='';
             currentEvent.buttons.forEach(btn => {
                 const b = document.createElement('button');
@@ -299,18 +299,18 @@
         }
     }
 
-    // --- DUAL WRITE LOGIC (PRIORITY: MAIN) ---
+    // --- DUAL DATABASE WRITE LOGIC ---
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
-        // 1. Prepare Main DB Updates
+        // --- 1. PREPARE MAIN DB UPDATES (Critical) ---
         const mainUpdates = {};
         const key = push(ref(dbMain, 'logs')).key;
         const timestamp = serverTimestamp();
         
         mainUpdates[`logs/${key}`] = { 
             scoutID: id, scoutName: name, event: currentEvent.name, action, 
-            timestamp: timestamp, scanner: auth.currentUser.email 
+            timestamp: timestamp, scanner: scannerEmail 
         };
         mainUpdates['stats/total_scans'] = increment(1);
         mainUpdates[`stats/events/${currentEvent.name}/${action.toLowerCase()}`] = increment(1);
@@ -322,47 +322,42 @@
             mainUpdates[`stats/events/${currentEvent.name}/completed`] = increment(1);
         }
 
-        // 2. Prepare Parent DB Updates (Status & History)
+        // --- 2. PREPARE PARENT DB UPDATES (Secondary) ---
         const cleanID = id.replace(/[.#$/[\]]/g, '_');
         const parentUpdates = {};
         
-        // A. Live Status
+        // Status
         parentUpdates[`public_status/${cleanID}`] = {
-            id: id,
-            name: name,
-            status: action, // IN / OUT / COMPLETED
-            loc: currentEvent.name,
-            last_seen: timestamp
+            id: id, name: name, status: action, 
+            loc: currentEvent.name, last_seen: timestamp
         };
-
-        // B. Public History (We push a new entry for timeline)
+        // History
         const histKey = push(ref(dbParent, `public_history/${cleanID}`)).key;
         parentUpdates[`public_history/${cleanID}/${histKey}`] = {
-            event: currentEvent.name,
-            action: action,
-            time: timestamp
+            event: currentEvent.name, action: action, time: timestamp
         };
 
         try {
-            // STEP 1: Write to Main DB (Must succeed)
+            // Priority 1: Write to MAIN DB. (Must succeed)
             await update(ref(dbMain), mainUpdates);
             
-            // If we are here, Main DB is safe. Now Try Parent DB.
-            let successMsg = "Recorded (x1)";
-            
+            // If Main DB succeeds, we assume Success x1
+            let successTitle = "Success (x1)";
+
             try {
+                // Priority 2: Write to PARENT DB (Non-blocking catch)
                 await update(ref(dbParent), parentUpdates);
-                successMsg = "Synced (x2)"; // Updated status if both succeed
-            } catch(parentErr) {
-                console.warn("Parent sync skipped:", parentErr);
+                successTitle = "Success (x2)"; // Both succeeded
+            } catch(parentError) {
+                console.warn("Parent sync failed:", parentError);
             }
 
-            // Show Toast with specific success level
+            // Show Toast
             Swal.fire({
                 toast: true, 
                 position: 'bottom', 
                 icon: 'success', 
-                title: successMsg, 
+                title: successTitle, 
                 timer: 1000, 
                 showConfirmButton: false,
                 background: '#0F172A',
@@ -370,7 +365,7 @@
             });
 
         } catch (e) {
-            Swal.fire({toast:true, position:'top', icon:'error', title:'Failed', text:'Main DB Error'});
+            Swal.fire({toast:true, position:'top', icon:'error', title:'Error', text:'Main DB Write Failed!'});
         }
         
         resume();
