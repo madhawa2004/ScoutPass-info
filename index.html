@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoutPass Info | Login</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-light: #F0F5F4;
+            --text-dark: #181818;
+            --primary-blue: #2563EB; /* Updated Blue */
+            --white: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background Design */
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: 0.6; z-index: -1;
+            animation: float 10s infinite ease-in-out;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(37, 99, 235, 0.15); }
+        .blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: rgba(184, 251, 76, 0.2); }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(20px, 30px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Login Card */
+        .login-card {
+            background: var(--white);
+            padding: 45px 40px;
+            border-radius: 24px;
+            width: 90%; max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+
+        .brand-logo { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 5px; }
+        .brand-accent { color: var(--primary-blue); }
+
+        .form-control {
+            background: #F8F9FA; border: 2px solid #E9ECEF;
+            padding: 14px; border-radius: 12px; margin-bottom: 15px;
+        }
+        .form-control:focus {
+            background: var(--white); border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary-blue); color: var(--white);
+            font-weight: 600; width: 100%; padding: 14px;
+            border-radius: 12px; border: none; margin-top: 10px;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary-custom:hover { transform: translateY(-2px); background: #1d4ed8; }
+
+        #setupLink {
+            font-size: 0.85rem; color: #adb5bd; text-decoration: none;
+            cursor: pointer; display: none; margin-top: 20px;
+        }
+        #setupLink:hover { color: var(--text-dark); }
+        
+        .scout-icon {
+            width: 60px; height: 60px;
+            background: rgba(37, 99, 235, 0.1); color: var(--primary-blue);
+            border-radius: 50%; margin: 0 auto 15px;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="login-card">
+        <div class="scout-icon"><i class="bi bi-shield-lock-fill"></i></div>
+        <h2 class="brand-logo">ScoutPass <span class="brand-accent">Info</span></h2>
+        <p class="text-muted small mb-4">Event Management System</p>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <input type="email" id="email" class="form-control" placeholder="Email Address" required>
+            <input type="password" id="password" class="form-control" placeholder="Password" required>
+            
+            <button type="submit" id="loginBtn" class="btn btn-primary-custom">Sign In</button>
+            
+            <div class="text-center">
+                <span id="setupLink" onclick="startInitialSetup()"><i class="bi bi-magic me-1"></i> Setup Root Admin</span>
+            </div>
+        </form>
+    </div>
+
+    <div style="position: absolute; bottom: 20px; font-size: 0.8rem; color: #888;">
+        System Version 2.0 (Optimized)
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script type="module">
+    // 1. NEW CONFIGURATION
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q",
+        authDomain: "scoutpassinfo.firebaseapp.com",
+        databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "scoutpassinfo",
+        storageBucket: "scoutpassinfo.firebasestorage.app",
+        messagingSenderId: "275495941550",
+        appId: "1:275495941550:web:516a5b1429dbf8d80e443f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // 2. CHECK IF SETUP IS NEEDED
+    async function checkSystemStatus() {
+        try {
+            const setupRef = ref(db, 'system/setupComplete');
+            const snapshot = await get(setupRef);
+            
+            // If setupComplete is NOT true, show the link
+            if (!snapshot.exists() || snapshot.val() !== true) {
+                document.getElementById('setupLink').style.display = 'inline-block';
+            } else {
+                document.getElementById('setupLink').style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Connection Check Failed:", error);
+        }
+    }
+    // Run check on load
+    checkSystemStatus();
+
+    // 3. MASTER KEY SETUP LOGIC
+    window.startInitialSetup = async function() {
+        // Step 1: Ask for Master Key
+        const { value: code } = await Swal.fire({
+            title: 'System Setup',
+            text: 'Enter Master Verification Key',
+            input: 'password',
+            confirmButtonColor: '#181818',
+            confirmButtonText: 'Verify Access'
+        });
+
+        // Step 2: Validate Key
+        if (code === "200431504082") {
+            // Step 3: Ask for New Admin Details
+            const { value: formValues } = await Swal.fire({
+                title: 'Create Root Admin',
+                html: `
+                    <input id="swal-email" class="swal2-input" placeholder="Admin Email">
+                    <input id="swal-password" class="swal2-input" type="password" placeholder="Password">
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: '#2563EB',
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-email').value,
+                        document.getElementById('swal-password').value
+                    ]
+                }
+            });
+
+            if (formValues) {
+                const [email, pass] = formValues;
+                if(!email || !pass) return Swal.fire('Error', 'Fields cannot be empty', 'error');
+
+                Swal.fire({title: 'Initializing System...', didOpen: () => Swal.showLoading()});
+
+                try {
+                    // Create User in Firebase Auth
+                    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                    
+                    // Save User Role in DB
+                    await set(ref(db, `users/${cred.user.uid}`), { 
+                        email: email, 
+                        role: 'admin' 
+                    });
+
+                    // MARK SYSTEM AS SETUP (Hides the link forever)
+                    await set(ref(db, 'system/setupComplete'), true);
+
+                    Swal.fire('Success', 'Root Admin Created! System Locked.', 'success');
+                    document.getElementById('setupLink').style.display = 'none'; // Hide immediately
+
+                } catch (e) {
+                    Swal.fire('Error', e.message, 'error');
+                }
+            }
+        } else if (code) {
+            Swal.fire('Access Denied', 'Invalid Master Key', 'error');
+        }
+    }
+
+    // 4. LOGIN LOGIC
+    window.handleLogin = async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+        
+        // UI Feedback
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
+        btn.disabled = true;
+
+        try {
+            // Auth Check
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
+
+            // Role Check from DB
+            const snapshot = await get(ref(db, `users/${user.uid}`));
+
+            if(snapshot.exists()) {
+                const role = snapshot.val().role;
+                
+                // Show Success
+                const Toast = Swal.mixin({toast: true, position: 'top', showConfirmButton: false, timer: 1500});
+                Toast.fire({icon: 'success', title: `Welcome, ${role.toUpperCase()}`});
+
+                // Redirect based on Role (Note: We will create these files next)
+                setTimeout(() => {
+                    if (role === 'admin') window.location.href = "admin_v2.html";
+                    else if (role === 'scanner') window.location.href = "scanner_v2.html";
+                    else Swal.fire('Error', 'Unknown Role', 'error');
+                }, 1000);
+
+            } else {
+                throw new Error("User role not found in database.");
+            }
+
+        } catch (error) {
+            Swal.fire({icon: 'error', title: 'Login Failed', text: error.message});
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
