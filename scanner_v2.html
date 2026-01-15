@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass V22</title>
+    <title>ScoutPass V23</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -75,6 +75,10 @@
         }
         .form-select:focus, .form-control:focus { outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
 
+        /* Fix for Select Placeholder Color */
+        select:invalid { color: #64748b; }
+        option { color: var(--text); }
+
         .btn-main {
             width: 100%; height: 60px; border-radius: 50px; border: none;
             background: var(--primary); color: white;
@@ -101,7 +105,6 @@
 
         #loginModal { z-index: 3000; }
 
-        /* COMPACT NOTIFICATION STYLE */
         .swal2-popup.small-toast {
             padding: 5px 15px !important;
             display: flex !important;
@@ -110,15 +113,8 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
             border-radius: 50px !important;
         }
-        .small-toast .swal2-title {
-            font-size: 0.9rem !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        .small-toast .swal2-icon {
-            transform: scale(0.6) !important;
-            margin: 0 5px 0 0 !important;
-        }
+        .small-toast .swal2-title { font-size: 0.9rem !important; margin: 0 !important; padding: 0 !important; }
+        .small-toast .swal2-icon { transform: scale(0.6) !important; margin: 0 5px 0 0 !important; }
     </style>
 </head>
 <body>
@@ -144,14 +140,17 @@
         </div>
 
         <select class="form-select" id="eventSelect" onchange="setEvent()">
-            <option disabled selected>Select Event</option>
+            <option value="" disabled selected>Select Event</option>
         </select>
 
         <form autocomplete="off" onsubmit="return false;">
-            <input type="text" style="display:none"><input type="password" style="display:none">
-            <input type="text" class="form-control" id="manualInput" 
+            <input type="text" style="display:none">
+            <input type="search" class="form-control" id="manualInput" 
                    placeholder="Enter ID Manually" 
-                   autocomplete="new-password" name="scout_id_v22">
+                   autocomplete="off" 
+                   readonly 
+                   onfocus="this.removeAttribute('readonly');"
+                   name="search_unique_id_v23">
         </form>
 
         <button class="btn-main" onclick="manualSubmit()">SCAN / SUBMIT</button>
@@ -193,8 +192,10 @@
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // DB CONFIGS
+    // 1. MAIN DATABASE (Private)
     const mainConfig = { apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", authDomain: "scoutpassinfo.firebaseapp.com", databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpassinfo", storageBucket: "scoutpassinfo.firebasestorage.app", messagingSenderId: "275495941550", appId: "1:275495941550:web:516a5b1429dbf8d80e443f" };
+    
+    // 2. PARENT DATABASE (Public)
     const parentConfig = { apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90", authDomain: "scoutpass-2db.firebaseapp.com", databaseURL: "https://scoutpass-2db-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpass-2db", storageBucket: "scoutpass-2db.firebasestorage.app", messagingSenderId: "966417461714", appId: "1:966417461714:web:084eb12236acfa4848980b" };
 
     const mainApp = initializeApp(mainConfig, "Main");
@@ -205,15 +206,11 @@
 
     let html5QrCode = null, currentEvent = null, isProcessing = false, lastScannedCode = null, lastScanTime = 0, loggedInUserEmail = "";
 
-    // BEEP SOUND (Base64 encoded short beep)
-    const beepSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."); 
-    // Note: Audio plays reliably after user interacts with page (like clicking login)
-
     // AUTH
     onAuthStateChanged(auth, u => {
         if (u) {
             loggedInUserEmail = u.email;
-            document.getElementById('userEmail').innerText = u.email;
+            document.getElementById('userEmail').innerText = u.email.split('@')[0];
             document.getElementById('userBadge').style.display = 'flex';
             document.getElementById('loginModal').style.display = 'none';
             initScanner();
@@ -254,6 +251,7 @@
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
         const currentVal = sel.value; 
+        // Reset HTML to show placeholder correctly
         sel.innerHTML = '<option value="" disabled selected>Select Event</option>';
         if(s.exists()) {
             Object.values(s.val()).forEach(evt => {
@@ -261,7 +259,7 @@
                     const opt = document.createElement('option'); opt.value = JSON.stringify(evt); opt.text = evt.name; sel.appendChild(opt);
                 }
             });
-            if(currentVal) sel.value = currentVal;
+            if(currentVal && currentVal !== "") sel.value = currentVal;
         }
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
@@ -273,10 +271,9 @@
         if (decodedText === lastScannedCode && (now - lastScanTime < 2000)) return;
         lastScannedCode = decodedText; lastScanTime = now;
 
-        // Feedback: Vibrate & Beep
+        // Feedback
         if(navigator.vibrate) navigator.vibrate(200);
-        // Beep logic (Simple fallback)
-        try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); osc.connect(ctx.destination); osc.frequency.value=1000; osc.start(); setTimeout(()=>osc.stop(), 100); } catch(e){}
+        try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); osc.connect(ctx.destination); osc.frequency.value=1200; osc.start(); setTimeout(()=>osc.stop(), 100); } catch(e){}
 
         if(!currentEvent) {
             isProcessing = true;
@@ -346,18 +343,15 @@
         try {
             await update(ref(dbMain), mainUpdates);
             
-            // Default Red (Main Only)
             let toastColor = '#DC2626'; 
             let toastTitle = "Recorded (Main Only)";
             
             try {
                 await update(ref(dbParent), parentUpdates);
-                // Success Green (Synced)
                 toastColor = '#16A34A'; 
                 toastTitle = "Synced (x2)";
             } catch(e) { console.warn("Parent Sync Error"); }
 
-            // COMPACT TOAST NOTIFICATION
             Swal.fire({ 
                 toast: true, position: 'top', title: toastTitle, icon: 'success', iconColor:'white',
                 timer: 1500, showConfirmButton: false, background: toastColor, color: '#fff',
