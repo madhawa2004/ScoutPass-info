@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass Scanner</title>
+    <title>ScoutPass V21 Minimal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -13,148 +13,157 @@
     <style>
         :root {
             --primary: #4F46E5;
-            --bg-light: #F8FAFC;
-            --dark: #0F172A;
-            --success: #16A34A;
-            --error: #DC2626;
+            --bg: #F1F5F9;
+            --card-bg: #ffffff;
+            --text: #0F172A;
+            --gray: #94A3B8;
         }
 
         body { 
-            background-color: var(--bg-light); 
+            background-color: var(--bg); 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--dark);
+            color: var(--text);
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 15px; overflow-x: hidden;
+            padding: 20px 15px; overflow-x: hidden;
         }
 
-        /* HEADER */
-        .brand-title { color: var(--primary); font-weight: 800; letter-spacing: 1px; font-size: 1.5rem; margin-bottom: 2px; }
-        .brand-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 15px; font-weight: 600; }
+        /* 1. TOP USER BADGE (Minimal Pill) */
+        .user-badge {
+            background: #E0E7FF; color: var(--primary);
+            padding: 8px 20px; border-radius: 50px;
+            font-size: 0.85rem; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 20px; box-shadow: 0 2px 10px rgba(79, 70, 229, 0.1);
+        }
+        .dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
 
-        /* CAMERA BOX (Mobile Optimized) */
+        /* 2. CAMERA (Clean, No Effects) */
         .cam-wrapper {
-            position: relative;
-            width: 100%; max-width: 100%; aspect-ratio: 1; /* Square */
-            background: #000; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
-            margin-bottom: 20px; border: 3px solid white;
+            position: relative; width: 100%; max-width: 360px; aspect-ratio: 1;
+            background: #000; border-radius: 30px; overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 25px; border: 5px solid white;
         }
         #reader { width: 100%; height: 100%; }
-        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 18px; }
+        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 25px; }
 
-        /* CONTROLS */
-        .controls-wrapper { width: 100%; max-width: 400px; z-index: 10; }
-        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        /* 3. CONTROLS (Rounded & Clean) */
+        .controls-box { width: 100%; max-width: 380px; }
         
-        .btn-flash { 
-            background: white; color: var(--dark); border: 1px solid #e2e8f0; 
-            width: 50px; height: 50px; border-radius: 12px; font-size: 1.2rem; 
+        .row-top { display: flex; gap: 10px; margin-bottom: 12px; }
+
+        .btn-flash {
+            width: 55px; height: 55px; border-radius: 50%; border: none;
+            background: white; color: var(--text); font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s;
             display: flex; align-items: center; justify-content: center;
         }
-        .btn-flash.active { background: #EAB308; color: white; border-color: #EAB308; }
+        .btn-flash.active { background: #fbbf24; color: white; }
 
+        /* Rounded Inputs */
         .form-select, .form-control {
-            height: 50px; border: 1px solid #e2e8f0; padding: 10px 15px; 
-            border-radius: 12px; font-weight: 600; font-size: 0.95rem; 
-            background: white; color: var(--dark);
+            height: 55px; border: none; padding: 0 20px;
+            border-radius: 50px; /* Pill Shape */
+            background: white; color: var(--text); font-weight: 600; font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 12px;
         }
-        .form-select:focus, .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        
+        .form-select:focus, .form-control:focus { outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
+
+        /* Main Button */
         .btn-main {
-            background: var(--primary); color: white; width: 100%; height: 55px;
-            border-radius: 14px; font-weight: 800; border: none;
-            text-transform: uppercase; letter-spacing: 0.5px; font-size: 1rem;
-            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3); margin-top: 10px;
+            width: 100%; height: 60px; border-radius: 50px; border: none;
+            background: var(--primary); color: white;
+            font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); margin-top: 5px;
+            transition: transform 0.1s;
         }
-        .btn-main:active { transform: scale(0.98); }
+        .btn-main:active { transform: scale(0.97); }
 
-        .footer-credit { margin-top: 25px; font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
-        .footer-credit span { color: var(--primary); font-weight: 700; }
-        .logout-btn { color: #EF4444; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; }
+        /* Footer */
+        .footer { margin-top: 30px; text-align: center; }
+        .credit { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
+        .logout { color: #ef4444; font-size: 0.8rem; font-weight: 700; text-decoration: none; cursor: pointer; display: block; margin-top: 5px; }
 
-        /* MODALS */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .modal-card { 
-            background: white; width: 100%; max-width: 350px; padding: 30px; 
-            border-radius: 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-        }
+        /* Modals (Clean White) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-card { background: white; width: 100%; max-width: 350px; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         
-        .badge-id { font-size: 1.1rem; padding: 6px 16px; border-radius: 50px; background: #0F172A; color: white; display: inline-block; margin-bottom: 20px; font-weight: 700; }
-        .details-box { background: #F1F5F9; padding: 15px; border-radius: 16px; margin: 10px 0 20px 0; text-align: left; font-size: 0.9rem; border: 1px solid #E2E8F0; }
-        .d-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .val { font-weight: 700; color: var(--dark); }
+        .badge-id { font-size: 1.2rem; padding: 8px 25px; border-radius: 50px; background: var(--text); color: white; display: inline-block; margin-bottom: 25px; font-weight: 700; }
+        .info-box { background: #F8FAFC; padding: 20px; border-radius: 20px; text-align: left; margin-bottom: 20px; }
+        .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
         
-        .action-grid { display: grid; gap: 10px; margin-top: 15px; }
-        .btn-act { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
-        .bg-in { background: var(--success); } .bg-out { background: var(--error); } .bg-done { background: #3B82F6; }
+        .grid-btns { display: grid; gap: 10px; }
+        .btn-act { padding: 15px; border-radius: 15px; border: none; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1px; width: 100%; }
+        .bg-in { background: #16A34A; } .bg-out { background: #DC2626; } .bg-done { background: #2563EB; }
 
         #loginModal { z-index: 3000; }
     </style>
 </head>
 <body>
 
-    <div class="text-center">
-        <div class="brand-title">SCOUTPASS</div>
-        <div class="brand-sub" id="userDisplay">Loading System...</div>
+    <div class="user-badge" id="userBadge" style="display:none;">
+        <div class="dot"></div>
+        <span id="userEmail">Connecting...</span>
     </div>
 
-    <div class="cam-wrapper"><div id="reader"></div></div>
+    <div class="cam-wrapper">
+        <div id="reader"></div>
+    </div>
 
-    <div class="controls-wrapper">
-        <div class="control-row">
-            <button class="btn-flash" id="flashBtn" onclick="toggleFlash()"><i class="bi bi-lightning-fill"></i></button>
-            <select class="form-select" id="camList" onchange="switchCamera(this.value)">
+    <div class="controls-box">
+        
+        <div class="row-top">
+            <button class="btn-flash" id="flashBtn" onclick="toggleFlash()">
+                <i class="bi bi-lightning-fill"></i>
+            </button>
+            <select class="form-select flex-grow-1" id="camList" onchange="switchCamera(this.value)">
                 <option disabled selected>Select Camera Manually</option>
             </select>
         </div>
 
-        <select class="form-select mb-3" id="eventSelect" onchange="setEvent()">
+        <select class="form-select" id="eventSelect" onchange="setEvent()">
             <option disabled selected>Select Event</option>
         </select>
 
         <form autocomplete="off" onsubmit="return false;">
             <input type="text" style="display:none">
             <input type="password" style="display:none">
-            <input type="text" class="form-control mb-3" id="manualInput" 
+            <input type="text" class="form-control" id="manualInput" 
                    placeholder="Enter ID Manually" 
-                   autocomplete="new-password" 
-                   name="scout_id_unique_field">
+                   autocomplete="new-password" name="unique_scout_id_v21">
         </form>
 
-        <button class="btn-main" onclick="manualSubmit()">
-            <i class="bi bi-qr-code-scan me-2"></i> SCAN / SUBMIT
-        </button>
+        <button class="btn-main" onclick="manualSubmit()">SCAN / SUBMIT</button>
 
-        <div class="text-center">
-            <div class="footer-credit">Designed and Developed by <span>Madhawa Basnayake</span></div>
-            <div class="logout-btn" onclick="logout()">Logout Session</div>
+        <div class="footer">
+            <div class="credit">Designed and Developed by Madhawa Basnayake</div>
+            <div class="logout" onclick="logout()">Logout</div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="loginModal">
+    <div class="modal-overlay" id="loginModal" style="display: flex;">
         <div class="modal-card animate__animated animate__fadeIn">
-            <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
-            <h3 class="fw-bold mb-4 mt-3">OFFICER LOGIN</h3>
-            <div class="text-start mb-3"><input type="email" id="loginEmail" class="form-control" placeholder="Email"></div>
-            <div class="text-start mb-4"><input type="password" id="loginPass" class="form-control" placeholder="Password"></div>
-            <button class="btn-main mt-0" onclick="performLogin()">ACCESS SYSTEM</button>
+            <h3 class="fw-bold mb-4">Officer Login</h3>
+            <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email">
+            <input type="password" id="loginPass" class="form-control mb-4" placeholder="Password">
+            <button class="btn-main mt-0" onclick="performLogin()">LOGIN</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="scanModal">
         <div class="modal-card animate__animated animate__zoomIn">
-            <h2 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h2>
+            <h2 id="mName" style="font-weight: 800; margin-bottom: 5px;">...</h2>
             <div class="badge-id" id="mID">...</div>
 
-            <div class="details-box" id="heavyDetails" style="display:none;">
-                <div class="d-row"><span class="text-muted fw-bold">Medical</span><span class="val text-danger" id="mMed">-</span></div>
-                <div class="d-row"><span class="text-muted fw-bold">Emergency</span><span class="val" id="mEmg">-</span></div>
-                <div class="d-row"><span class="text-muted fw-bold">Leader</span><span class="val" id="mLdr">-</span></div>
+            <div class="info-box" id="heavyDetails" style="display:none;">
+                <div class="d-row"><span>Medical</span><b class="text-danger" id="mMed">-</b></div>
+                <div class="d-row"><span>Emergency</span><b id="mEmg">-</b></div>
+                <div class="d-row"><span>Leader</span><b id="mLdr">-</b></div>
             </div>
 
-            <div id="actionButtons" class="action-grid"></div>
-            <button class="btn btn-light text-muted w-100 mt-4 fw-bold py-3 rounded-4" onclick="closeModal()">CANCEL</button>
+            <div id="actionButtons" class="grid-btns"></div>
+            <button class="btn btn-light w-100 mt-4 fw-bold text-muted py-3 rounded-5" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
 
@@ -164,10 +173,10 @@
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. MAIN DB
+    // 1. MAIN DATABASE (Private)
     const mainConfig = { apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", authDomain: "scoutpassinfo.firebaseapp.com", databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpassinfo", storageBucket: "scoutpassinfo.firebasestorage.app", messagingSenderId: "275495941550", appId: "1:275495941550:web:516a5b1429dbf8d80e443f" };
     
-    // 2. PARENT DB
+    // 2. PARENT DATABASE (Public)
     const parentConfig = { apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90", authDomain: "scoutpass-2db.firebaseapp.com", databaseURL: "https://scoutpass-2db-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpass-2db", storageBucket: "scoutpass-2db.firebasestorage.app", messagingSenderId: "966417461714", appId: "1:966417461714:web:084eb12236acfa4848980b" };
 
     const mainApp = initializeApp(mainConfig, "Main");
@@ -182,18 +191,19 @@
     onAuthStateChanged(auth, u => {
         if (u) {
             loggedInUserEmail = u.email;
-            document.getElementById('userDisplay').innerText = `Officer: ${u.email.split('@')[0]}`;
+            document.getElementById('userEmail').innerText = u.email;
+            document.getElementById('userBadge').style.display = 'flex';
             document.getElementById('loginModal').style.display = 'none';
             initScanner();
         } else {
-            document.getElementById('userDisplay').innerText = "Auth Required";
+            document.getElementById('userBadge').style.display = 'none';
             document.getElementById('loginModal').style.display = 'flex';
         }
     });
 
     window.performLogin = async () => {
         const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
-        if (!e || !p) return Swal.fire('Error', 'Credentials Required', 'warning');
+        if (!e || !p) return Swal.fire('Error', 'Required', 'warning');
         try { await signInWithEmailAndPassword(auth, e, p); } catch { Swal.fire('Error', 'Invalid Login', 'error'); }
     };
 
@@ -215,14 +225,13 @@
 
     function startScanner(camId) {
         html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(camId, { fps: 30, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, onScanSuccess, null)
-        .catch(err => console.log(err));
+        html5QrCode.start(camId, { fps: 30, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, onScanSuccess, null).catch(err => console.log(err));
     }
 
     // EVENTS
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
-        const currentVal = sel.value; // Store selection
+        const currentVal = sel.value; 
         sel.innerHTML = '<option value="" disabled selected>Select Event</option>';
         if(s.exists()) {
             Object.values(s.val()).forEach(evt => {
@@ -230,12 +239,12 @@
                     const opt = document.createElement('option'); opt.value = JSON.stringify(evt); opt.text = evt.name; sel.appendChild(opt);
                 }
             });
-            if(currentVal) sel.value = currentVal; // Restore
+            if(currentVal) sel.value = currentVal;
         }
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
 
-    // SCAN LOGIC
+    // SCAN
     async function onScanSuccess(decodedText) {
         if(isProcessing) return;
         const now = Date.now();
@@ -244,7 +253,7 @@
 
         if(!currentEvent) {
             isProcessing = true;
-            Swal.fire({toast:true, position:'top', icon:'warning', title:'Select Event First'}).then(()=>isProcessing=false);
+            Swal.fire({toast:true, position:'top', icon:'warning', title:'Select Event'}).then(()=>isProcessing=false);
             return;
         }
 
@@ -284,7 +293,7 @@
         }
     }
 
-    // PROCESS LOG
+    // PROCESS
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
@@ -309,16 +318,23 @@
 
         try {
             await update(ref(dbMain), mainUpdates);
-            let toastColor = '#dc2626'; // RED
+            
+            // RED Notification (Main Only)
+            let toastColor = '#DC2626'; 
             let toastTitle = "Recorded (Main Only)";
             
             try {
                 await update(ref(dbParent), parentUpdates);
-                toastColor = '#16a34a'; // GREEN
-                toastTitle = "Synced to Both DBs";
-            } catch(e) { console.warn("Sync Error"); }
+                // GREEN Notification (Both Success)
+                toastColor = '#16A34A'; 
+                toastTitle = "Synced (x2) Success";
+            } catch(e) { console.warn("Parent Sync Error"); }
 
-            Swal.fire({ toast: true, position: 'top', icon: 'success', title: toastTitle, timer: 1500, showConfirmButton: false, background: toastColor, color: '#fff' });
+            Swal.fire({ 
+                toast: true, position: 'top', title: toastTitle, icon: 'success', iconColor:'white',
+                timer: 1500, showConfirmButton: false, background: toastColor, color: '#fff',
+                customClass: { popup: 'shadow-lg rounded-4' }
+            });
         } catch (e) {
             Swal.fire({toast:true, position:'top', icon:'error', title:'Main DB Failed'});
         }
