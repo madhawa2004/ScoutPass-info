@@ -3,149 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass Scanner V13</title>
+    <title>ScoutPass V14</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
-        :root {
-            --primary: #4F46E5;
-            --bg-light: #F8FAFC;
-            --dark: #0F172A;
-            --neon-green: #22c55e;
-        }
-
-        body { 
-            background-color: var(--bg-light); 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--dark);
-            height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; overflow: hidden;
-        }
-
-        /* HEADER */
+        /* (Styles are same as V13 - Keeping it clean) */
+        :root { --primary: #4F46E5; --bg-light: #F8FAFC; --dark: #0F172A; }
+        body { background-color: var(--bg-light); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--dark); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
         .brand-title { color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 1.2rem; margin-bottom: 5px; }
         .brand-sub { font-size: 0.75rem; color: #64748b; margin-bottom: 20px; font-weight: 600; }
-
-        /* CAMERA BOX (Full Clean View) */
-        .cam-wrapper {
-            position: relative;
-            width: 100%; max-width: 400px; aspect-ratio: 1;
-            background: #000; border-radius: 30px; overflow: hidden;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
-            margin-bottom: 25px; border: 4px solid white;
-        }
+        .cam-wrapper { position: relative; width: 100%; max-width: 380px; aspect-ratio: 1; background: #000; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); margin-bottom: 20px; border: 4px solid white; }
         #reader { width: 100%; height: 100%; }
-        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 30px; }
-
-        /* CONTROLS */
-        .controls-wrapper { width: 100%; max-width: 400px; z-index: 10; }
+        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 20px; }
+        .controls-wrapper { width: 100%; max-width: 380px; z-index: 10; }
         .control-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        
-        .btn-flash { background: #fff; color: var(--dark); border: 2px solid #e2e8f0; width: 55px; border-radius: 15px; font-size: 1.3rem; transition:0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .btn-flash { background: #fff; color: var(--dark); border: 2px solid #e2e8f0; width: 50px; border-radius: 12px; font-size: 1.2rem; transition:0.2s;}
         .btn-flash.active { background: #EAB308; color: white; border-color: #EAB308; }
-
-        .form-select, .form-control {
-            border: 2px solid #e2e8f0; padding: 15px; border-radius: 15px; font-weight: 600;
-            font-size: 1rem; background: white; color: var(--dark); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        .form-select:focus, .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-        
-        .btn-main {
-            background: var(--primary); color: white; width: 100%; padding: 18px;
-            border-radius: 18px; font-weight: 800; border: none; font-size: 1.1rem;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.4); margin-top: 15px;
-            transition: transform 0.1s;
-        }
+        .form-select, .form-control { border: 2px solid #e2e8f0; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; background: white; color: var(--dark); }
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 15px; border-radius: 14px; font-weight: 800; border: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); margin-top: 10px; transition: transform 0.1s; }
         .btn-main:active { transform: scale(0.98); }
-
         .footer-link { margin-top: 25px; color: #EF4444; font-weight: 700; text-decoration: none; font-size: 0.85rem; cursor: pointer; }
         
-        /* LARGER MODAL */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
-        .modal-card { 
-            background: white; width: 100%; max-width: 380px; padding: 35px; 
-            border-radius: 30px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-            transform: scale(0.95); transition: transform 0.2s;
-        }
-        
-        .modal-title { font-size: 1.8rem; font-weight: 800; color: var(--dark); margin-bottom: 5px; line-height: 1.2; }
-        .badge-id { font-size: 1rem; padding: 8px 16px; border-radius: 50px; background: #0F172A; color: white; display: inline-block; margin-bottom: 20px; }
-
-        .details-box { background: #F1F5F9; padding: 20px; border-radius: 20px; margin: 10px 0 25px 0; text-align: left; font-size: 1rem; border: 1px solid #E2E8F0; }
-        .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        .modal-card { background: white; width: 100%; max-width: 340px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .details-box { background: #F1F5F9; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: left; font-size: 0.85rem; border: 1px solid #E2E8F0; }
+        .d-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
         .val { font-weight: 700; color: var(--dark); }
-        
-        .action-grid { display: grid; gap: 12px; margin-top: 15px; }
-        .btn-act { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 800; color: white; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 1px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .action-grid { display: grid; gap: 8px; margin-top: 15px; }
+        .btn-act { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
         .bg-in { background: #10B981; } .bg-out { background: #EF4444; } .bg-done { background: #3B82F6; }
+
+        /* Login Modal Specific */
+        #loginModal { z-index: 3000; } /* Higher than scan modal */
     </style>
 </head>
 <body>
 
     <div class="text-center">
         <div class="brand-title">SCOUTPASS</div>
-        <div class="brand-sub" id="userDisplay">Verifying...</div>
+        <div class="brand-sub" id="userDisplay">Connecting...</div>
     </div>
 
-    <div class="cam-wrapper">
-        <div id="reader"></div>
-    </div>
+    <div class="cam-wrapper"><div id="reader"></div></div>
 
     <div class="controls-wrapper">
         <div class="control-row">
             <button class="btn-flash" id="flashBtn" onclick="toggleFlash()"><i class="bi bi-lightning-fill"></i></button>
-            <select class="form-select" id="camList" onchange="switchCamera(this.value)">
-                <option value="" disabled selected>Loading...</option>
-            </select>
+            <select class="form-select" id="camList" onchange="switchCamera(this.value)"><option disabled selected>Loading...</option></select>
         </div>
-
-        <select class="form-select mb-3" id="eventSelect" onchange="setEvent()">
-            <option value="" disabled selected>Select Event</option>
-        </select>
-
+        <select class="form-select mb-3" id="eventSelect" onchange="setEvent()"><option disabled selected>Select Event</option></select>
         <input type="text" class="form-control mb-3" id="manualInput" placeholder="Enter ID Manually">
+        <button class="btn-main" onclick="manualSubmit()"><i class="bi bi-qr-code-scan me-2"></i> SCAN / SUBMIT</button>
+        <div class="text-center"><div class="footer-link" onclick="logout()">Logout</div></div>
+    </div>
 
-        <button class="btn-main" onclick="manualSubmit()">
-            <i class="bi bi-qr-code-scan me-2"></i> SCAN / SUBMIT
-        </button>
-
-        <div class="text-center">
-            <div class="footer-link" onclick="logout()">Logout</div>
+    <div class="modal-overlay" id="loginModal" style="display: flex;">
+        <div class="modal-card animate__animated animate__fadeIn">
+            <h3 class="fw-bold mb-4 text-primary">OFFICER LOGIN</h3>
+            <div class="mb-3 text-start">
+                <label class="small fw-bold text-muted">Email</label>
+                <input type="email" id="loginEmail" class="form-control mt-1">
+            </div>
+            <div class="mb-4 text-start">
+                <label class="small fw-bold text-muted">Password</label>
+                <input type="password" id="loginPass" class="form-control mt-1">
+            </div>
+            <button class="btn-main mt-0" onclick="performLogin()">LOGIN TO SCAN</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="scanModal">
-        <div class="modal-card animate__animated animate__zoomIn">
-            <div class="d-flex justify-content-center mb-3"><i class="bi bi-person-circle text-primary" style="font-size: 4rem;"></i></div>
-            
-            <div class="modal-title" id="mName">...</div>
-            <div class="badge-id" id="mID">...</div>
-
+        <div class="modal-card animate__animated animate__fadeInUp">
+            <div class="d-flex justify-content-center mb-3"><i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i></div>
+            <h3 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h3>
+            <span class="badge bg-dark rounded-pill px-3 mb-2" id="mID">...</span>
             <div class="details-box" id="heavyDetails" style="display:none;">
                 <div class="d-row"><span class="text-muted fw-bold">Medical</span><span class="val text-danger" id="mMed">-</span></div>
                 <div class="d-row"><span class="text-muted fw-bold">Emergency</span><span class="val" id="mEmg">-</span></div>
                 <div class="d-row"><span class="text-muted fw-bold">Leader</span><span class="val" id="mLdr">-</span></div>
             </div>
-
             <div id="actionButtons" class="action-grid"></div>
-            <button class="btn btn-light text-muted w-100 mt-4 fw-bold py-3 rounded-4" onclick="closeModal()">CANCEL</button>
+            <button class="btn btn-light text-muted w-100 mt-3 fw-bold py-2" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- 1. MAIN DATABASE (Internal - Scout Data & Logs) ---
+    // 1. MAIN DATABASE (Scanner & Admin)
     const mainConfig = { 
         apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", 
         authDomain: "scoutpassinfo.firebaseapp.com", 
@@ -155,8 +108,8 @@
         messagingSenderId: "275495941550", 
         appId: "1:275495941550:web:516a5b1429dbf8d80e443f" 
     };
-
-    // --- 2. PARENT DATABASE (Public - For Parents View) ---
+    
+    // 2. PARENT DATABASE (Public View)
     const parentConfig = {
         apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90",
         authDomain: "scoutpass-2db.firebaseapp.com",
@@ -167,38 +120,63 @@
         appId: "1:966417461714:web:084eb12236acfa4848980b"
     };
 
-    // Initialize both apps
+    // Initialize both
     const mainApp = initializeApp(mainConfig, "Main");
     const parentApp = initializeApp(parentConfig, "Parent");
 
     const dbMain = getDatabase(mainApp);
     const dbParent = getDatabase(parentApp);
-    const auth = getAuth(mainApp); // Auth is always checked against Main DB
+    const auth = getAuth(mainApp);
 
     let html5QrCode = null;
     let currentEvent = null;
     let isProcessing = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
-    let scannerEmail = "Guest";
+    let loggedInUserEmail = "";
 
-    // AUTH CHECK
+    // --- NEW: AUTHENTICATION HANDLING ---
     onAuthStateChanged(auth, u => {
-        if(!u) window.location.href="index.html";
-        else {
-            scannerEmail = u.email;
-            document.getElementById('userDisplay').innerText = u.email.split('@')[0];
+        if (u) {
+            // User is logged in -> Hide login modal, Show scanner
+            loggedInUserEmail = u.email;
+            document.getElementById('userDisplay').innerText = `Officer: ${u.email.split('@')[0]}`;
+            document.getElementById('loginModal').style.display = 'none'; // Hide Login
             initScanner();
+        } else {
+            // Not logged in -> Show login modal (Don't redirect)
+            document.getElementById('userDisplay').innerText = "Please Login";
+            document.getElementById('loginModal').style.display = 'flex'; // Show Login
         }
     });
 
-    // CAMERA LOGIC
+    window.performLogin = async () => {
+        const e = document.getElementById('loginEmail').value;
+        const p = document.getElementById('loginPass').value;
+        if (!e || !p) return Swal.fire('Error', 'Enter credentials', 'warning');
+        
+        try {
+            await signInWithEmailAndPassword(auth, e, p);
+            // onAuthStateChanged will handle the rest
+        } catch (err) {
+            Swal.fire('Login Failed', err.message, 'error');
+        }
+    };
+
+    window.logout = () => {
+        if(confirm("Logout?")) {
+            signOut(auth).then(() => {
+                location.reload(); // Refresh to show login screen again
+            });
+        }
+    };
+
+    // --- CAMERA LOGIC ---
     async function initScanner() {
         try {
             const devices = await Html5Qrcode.getCameras();
             const sel = document.getElementById('camList');
             sel.innerHTML = '';
-            
             if (devices && devices.length) {
                 devices.forEach(cam => {
                     const opt = document.createElement('option');
@@ -206,9 +184,7 @@
                     sel.appendChild(opt);
                 });
                 startScanner(devices[devices.length-1].id);
-            } else {
-                sel.innerHTML = '<option>No Camera</option>';
-            }
+            } else { sel.innerHTML = '<option>No Camera</option>'; }
         } catch(e) { console.error(e); }
     }
 
@@ -219,11 +195,11 @@
 
     function startScanner(camId) {
         html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(camId, { fps: 30, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, onScanSuccess, null)
+        html5QrCode.start(camId, { fps: 30, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 }, onScanSuccess, null)
         .catch(err => console.log(err));
     }
 
-    // EVENT LISTENER
+    // --- EVENTS ---
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
         const currentVal = sel.value;
@@ -241,10 +217,9 @@
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
 
-    // SCAN HANDLER
+    // --- SCAN HANDLER ---
     async function onScanSuccess(decodedText) {
         if(isProcessing) return;
-
         const now = Date.now();
         if (decodedText === lastScannedCode && (now - lastScanTime < 2000)) return;
         lastScannedCode = decodedText; lastScanTime = now;
@@ -260,7 +235,6 @@
         const id = decodedText.trim().replace(/[.#$/[\]]/g, '_');
 
         try {
-            // Fetch Basic from Main DB
             const bSnap = await get(ref(dbMain, `scouts_basic/${id}`));
             if(!bSnap.exists()) throw new Error('ID Not Found');
             const basic = bSnap.val();
@@ -276,9 +250,7 @@
                 document.getElementById('mEmg').innerText = d.emg;
                 document.getElementById('mLdr').innerText = d.ldr;
                 dBox.style.display = 'block';
-            } else {
-                dBox.style.display = 'none';
-            }
+            } else { dBox.style.display = 'none'; }
 
             const btnBox = document.getElementById('actionButtons'); btnBox.innerHTML='';
             currentEvent.buttons.forEach(btn => {
@@ -299,18 +271,18 @@
         }
     }
 
-    // --- DUAL DATABASE WRITE LOGIC ---
+    // --- DUAL WRITE LOGIC ---
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
-        // --- 1. PREPARE MAIN DB UPDATES (Critical) ---
+        // 1. MAIN DB WRITE
         const mainUpdates = {};
         const key = push(ref(dbMain, 'logs')).key;
         const timestamp = serverTimestamp();
         
         mainUpdates[`logs/${key}`] = { 
             scoutID: id, scoutName: name, event: currentEvent.name, action, 
-            timestamp: timestamp, scanner: scannerEmail 
+            timestamp: timestamp, scanner: loggedInUserEmail 
         };
         mainUpdates['stats/total_scans'] = increment(1);
         mainUpdates[`stats/events/${currentEvent.name}/${action.toLowerCase()}`] = increment(1);
@@ -322,50 +294,30 @@
             mainUpdates[`stats/events/${currentEvent.name}/completed`] = increment(1);
         }
 
-        // --- 2. PREPARE PARENT DB UPDATES (Secondary) ---
+        // 2. PARENT DB WRITE
         const cleanID = id.replace(/[.#$/[\]]/g, '_');
         const parentUpdates = {};
         
-        // Status
         parentUpdates[`public_status/${cleanID}`] = {
-            id: id, name: name, status: action, 
-            loc: currentEvent.name, last_seen: timestamp
+            id: id, name: name, status: action, loc: currentEvent.name, last_seen: timestamp
         };
-        // History
         const histKey = push(ref(dbParent, `public_history/${cleanID}`)).key;
         parentUpdates[`public_history/${cleanID}/${histKey}`] = {
             event: currentEvent.name, action: action, time: timestamp
         };
 
         try {
-            // Priority 1: Write to MAIN DB. (Must succeed)
             await update(ref(dbMain), mainUpdates);
-            
-            // If Main DB succeeds, we assume Success x1
-            let successTitle = "Success (x1)";
-
+            let msg = "Recorded (x1)";
             try {
-                // Priority 2: Write to PARENT DB (Non-blocking catch)
                 await update(ref(dbParent), parentUpdates);
-                successTitle = "Success (x2)"; // Both succeeded
-            } catch(parentError) {
-                console.warn("Parent sync failed:", parentError);
-            }
+                msg = "Synced (x2)";
+            } catch(e) { console.warn("Parent Sync Failed"); }
 
-            // Show Toast
-            Swal.fire({
-                toast: true, 
-                position: 'bottom', 
-                icon: 'success', 
-                title: successTitle, 
-                timer: 1000, 
-                showConfirmButton: false,
-                background: '#0F172A',
-                color: '#fff'
-            });
+            Swal.fire({toast:true, position:'bottom', icon:'success', title: msg, timer:1000, showConfirmButton:false});
 
         } catch (e) {
-            Swal.fire({toast:true, position:'top', icon:'error', title:'Error', text:'Main DB Write Failed!'});
+            Swal.fire({toast:true, position:'top', icon:'error', title:'Error', text:e.message});
         }
         
         resume();
@@ -378,15 +330,16 @@
     };
     window.closeModal = () => { document.getElementById('scanModal').style.display='none'; resume(); };
     function resume() { isProcessing=false; html5QrCode.resume(); }
-    window.logout = () => signOut(auth).then(()=>location.href="index.html");
     window.switchCamera = switchCamera;
+    window.performLogin = performLogin;
+    window.logout = logout;
 
     let isFlash = false;
     window.toggleFlash = () => {
         isFlash = !isFlash;
         html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlash }] })
         .then(()=>document.getElementById('flashBtn').classList.toggle('active'))
-        .catch(()=>Swal.fire('Error', 'Not Supported', 'info'));
+        .catch(()=>Swal.fire('Error', 'No Flash', 'info'));
     };
 </script>
 </body>
