@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass Scanner</title>
+    <title>ScoutPass Scanner V12</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,6 +16,7 @@
             --primary: #4F46E5;
             --bg-light: #F8FAFC;
             --dark: #0F172A;
+            --neon-green: #22c55e;
         }
 
         body { 
@@ -41,9 +42,6 @@
         }
         #reader { width: 100%; height: 100%; }
         #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 30px; }
-
-        /* NO LINES - Just a subtle focus frame if needed, or completely clean */
-        /* Currently completely clean as requested */
 
         /* CONTROLS */
         .controls-wrapper { width: 100%; max-width: 400px; z-index: 10; }
@@ -147,10 +145,35 @@
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", authDomain: "scoutpassinfo.firebaseapp.com", databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpassinfo", storageBucket: "scoutpassinfo.firebasestorage.app", messagingSenderId: "275495941550", appId: "1:275495941550:web:516a5b1429dbf8d80e443f" };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    // --- 1. MAIN DATABASE CONFIG (Original/Private) ---
+    const mainConfig = { 
+        apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", 
+        authDomain: "scoutpassinfo.firebaseapp.com", 
+        databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        projectId: "scoutpassinfo", 
+        storageBucket: "scoutpassinfo.firebasestorage.app", 
+        messagingSenderId: "275495941550", 
+        appId: "1:275495941550:web:516a5b1429dbf8d80e443f" 
+    };
+
+    // --- 2. PARENT DATABASE CONFIG (New/Public) ---
+    const parentConfig = {
+        apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90",
+        authDomain: "scoutpass-2db.firebaseapp.com",
+        databaseURL: "https://scoutpass-2db-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "scoutpass-2db",
+        storageBucket: "scoutpass-2db.firebasestorage.app",
+        messagingSenderId: "966417461714",
+        appId: "1:966417461714:web:084eb12236acfa4848980b"
+    };
+
+    // Initialize both apps
+    const mainApp = initializeApp(mainConfig, "Main");
+    const parentApp = initializeApp(parentConfig, "Parent");
+
+    const dbMain = getDatabase(mainApp);
+    const dbParent = getDatabase(parentApp);
+    const auth = getAuth(mainApp); // Auth is ONLY on Main
 
     let html5QrCode = null;
     let currentEvent = null;
@@ -158,16 +181,16 @@
     let lastScannedCode = null;
     let lastScanTime = 0;
 
-    // 1. AUTH
+    // AUTH CHECK (On Main DB)
     onAuthStateChanged(auth, u => {
         if(!u) window.location.href="index.html";
         else {
-            document.getElementById('userDisplay').innerText = u.email;
+            document.getElementById('userDisplay').innerText = u.email.split('@')[0];
             initScanner();
         }
     });
 
-    // 2. CAMERA INITIALIZATION
+    // --- CAMERA LOGIC ---
     async function initScanner() {
         try {
             const devices = await Html5Qrcode.getCameras();
@@ -198,8 +221,8 @@
         .catch(err => console.log(err));
     }
 
-    // 3. EVENTS
-    onValue(ref(db, 'events'), s => {
+    // --- EVENT LISTENER (From Main DB) ---
+    onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
         const currentVal = sel.value;
         sel.innerHTML = '<option value="" disabled selected>Select Event</option>';
@@ -216,7 +239,7 @@
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
 
-    // 4. SCAN LOGIC
+    // --- SCAN HANDLER ---
     async function onScanSuccess(decodedText) {
         if(isProcessing) return;
 
@@ -235,18 +258,18 @@
         const id = decodedText.trim().replace(/[.#$/[\]]/g, '_');
 
         try {
-            // Fetch Basic
-            const bSnap = await get(ref(db, `scouts_basic/${id}`));
+            // Fetch Basic Info from Main DB (Source of Truth)
+            const bSnap = await get(ref(dbMain, `scouts_basic/${id}`));
             if(!bSnap.exists()) throw new Error('ID Not Found');
             const basic = bSnap.val();
 
             document.getElementById('mName').innerText = basic.name;
             document.getElementById('mID').innerText = basic.id;
 
-            // Fetch Detail if needed
+            // Fetch Details if needed
             const dBox = document.getElementById('heavyDetails');
             if(currentEvent.mode === 'DETAILS') {
-                const dSnap = await get(ref(db, `scouts_details/${id}`));
+                const dSnap = await get(ref(dbMain, `scouts_details/${id}`));
                 const d = dSnap.val() || {emg:'-', med:'None', ldr:'-'};
                 document.getElementById('mMed').innerText = d.med;
                 document.getElementById('mEmg').innerText = d.emg;
@@ -276,25 +299,80 @@
         }
     }
 
-    // 5. SUBMIT
+    // --- DUAL WRITE LOGIC (PRIORITY: MAIN) ---
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
-        const updates = {};
-        const key = push(ref(db, 'logs')).key;
-        updates[`logs/${key}`] = { scoutID: id, scoutName: name, event: currentEvent.name, action, timestamp: serverTimestamp(), scanner: auth.currentUser.email };
-        updates['stats/total_scans'] = increment(1);
-        updates[`stats/events/${currentEvent.name}/${action.toLowerCase()}`] = increment(1);
+        // 1. Prepare Main DB Updates
+        const mainUpdates = {};
+        const key = push(ref(dbMain, 'logs')).key;
+        const timestamp = serverTimestamp();
+        
+        mainUpdates[`logs/${key}`] = { 
+            scoutID: id, scoutName: name, event: currentEvent.name, action, 
+            timestamp: timestamp, scanner: auth.currentUser.email 
+        };
+        mainUpdates['stats/total_scans'] = increment(1);
+        mainUpdates[`stats/events/${currentEvent.name}/${action.toLowerCase()}`] = increment(1);
 
         if(currentEvent.category === 'ENTRANCE') {
-            if(action==='IN') updates['stats/present_now'] = increment(1);
-            if(action==='OUT') updates['stats/present_now'] = increment(-1);
+            if(action==='IN') mainUpdates['stats/present_now'] = increment(1);
+            if(action==='OUT') mainUpdates['stats/present_now'] = increment(-1);
         } else {
-            updates[`stats/events/${currentEvent.name}/completed`] = increment(1);
+            mainUpdates[`stats/events/${currentEvent.name}/completed`] = increment(1);
         }
 
-        await update(ref(db), updates);
-        Swal.fire({toast:true, position:'bottom', icon:'success', title:'Recorded', timer:800, showConfirmButton:false});
+        // 2. Prepare Parent DB Updates (Status & History)
+        const cleanID = id.replace(/[.#$/[\]]/g, '_');
+        const parentUpdates = {};
+        
+        // A. Live Status
+        parentUpdates[`public_status/${cleanID}`] = {
+            id: id,
+            name: name,
+            status: action, // IN / OUT / COMPLETED
+            loc: currentEvent.name,
+            last_seen: timestamp
+        };
+
+        // B. Public History (We push a new entry for timeline)
+        const histKey = push(ref(dbParent, `public_history/${cleanID}`)).key;
+        parentUpdates[`public_history/${cleanID}/${histKey}`] = {
+            event: currentEvent.name,
+            action: action,
+            time: timestamp
+        };
+
+        try {
+            // STEP 1: Write to Main DB (Must succeed)
+            await update(ref(dbMain), mainUpdates);
+            
+            // If we are here, Main DB is safe. Now Try Parent DB.
+            let successMsg = "Recorded (x1)";
+            
+            try {
+                await update(ref(dbParent), parentUpdates);
+                successMsg = "Synced (x2)"; // Updated status if both succeed
+            } catch(parentErr) {
+                console.warn("Parent sync skipped:", parentErr);
+            }
+
+            // Show Toast with specific success level
+            Swal.fire({
+                toast: true, 
+                position: 'bottom', 
+                icon: 'success', 
+                title: successMsg, 
+                timer: 1000, 
+                showConfirmButton: false,
+                background: '#0F172A',
+                color: '#fff'
+            });
+
+        } catch (e) {
+            Swal.fire({toast:true, position:'top', icon:'error', title:'Failed', text:'Main DB Error'});
+        }
+        
         resume();
     }
 
