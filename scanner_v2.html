@@ -3,138 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoutPass V18 (Cute UI)</title>
+    <title>ScoutPass Scanner</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
         :root {
-            --primary: #6366f1;
-            --accent: #8b5cf6;
-            --bg-grad: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
-            --glass: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --dark: #1e293b;
+            --primary: #4F46E5;
+            --bg-light: #F8FAFC;
+            --dark: #0F172A;
+            --success: #16A34A;
+            --error: #DC2626;
         }
 
         body { 
-            background: var(--bg-grad);
-            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-light); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
             color: var(--dark);
-            height: 100vh;
+            min-height: 100vh;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; overflow: hidden;
+            padding: 15px; overflow-x: hidden;
         }
-
-        /* USER PILL (Top Email Display) */
-        .user-pill {
-            background: white; padding: 8px 20px; border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
-            display: flex; align-items: center; gap: 10px;
-            font-size: 0.85rem; font-weight: 700; color: #475569;
-            margin-bottom: 20px; animation: slideDown 0.5s ease;
-        }
-        .user-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 0 3px #dcfce7; }
 
         /* HEADER */
-        .brand-title { 
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            font-weight: 800; letter-spacing: 1px; font-size: 1.8rem; margin-bottom: 5px;
-        }
+        .brand-title { color: var(--primary); font-weight: 800; letter-spacing: 1px; font-size: 1.5rem; margin-bottom: 2px; }
+        .brand-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 15px; font-weight: 600; }
 
-        /* CAMERA BOX (Cute Rounded) */
+        /* CAMERA BOX (Mobile Optimized) */
         .cam-wrapper {
             position: relative;
-            width: 100%; max-width: 360px; aspect-ratio: 1;
-            background: white; border-radius: 35px; overflow: hidden;
-            box-shadow: 0 25px 60px -15px rgba(99, 102, 241, 0.3);
-            margin-bottom: 25px; border: 6px solid white;
+            width: 100%; max-width: 100%; aspect-ratio: 1; /* Square */
+            background: #000; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px; border: 3px solid white;
         }
         #reader { width: 100%; height: 100%; }
-        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 28px; }
+        #reader video { object-fit: cover; width: 100%; height: 100%; border-radius: 18px; }
 
-        /* CONTROLS CONTAINER */
-        .controls-wrapper { 
-            width: 100%; max-width: 360px; z-index: 10; 
-            background: var(--glass); backdrop-filter: blur(10px);
-            padding: 20px; border-radius: 30px; border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-
-        .control-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        /* CONTROLS */
+        .controls-wrapper { width: 100%; max-width: 400px; z-index: 10; }
+        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
         
-        /* Buttons & Inputs */
         .btn-flash { 
-            background: white; color: var(--dark); border: none; width: 55px; 
-            border-radius: 18px; font-size: 1.2rem; transition:0.2s; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: #fbbf24;
+            background: white; color: var(--dark); border: 1px solid #e2e8f0; 
+            width: 50px; height: 50px; border-radius: 12px; font-size: 1.2rem; 
+            display: flex; align-items: center; justify-content: center;
         }
-        .btn-flash.active { background: #fbbf24; color: white; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4); }
+        .btn-flash.active { background: #EAB308; color: white; border-color: #EAB308; }
 
         .form-select, .form-control {
-            border: 2px solid transparent; padding: 14px; border-radius: 18px; font-weight: 600;
-            font-size: 0.9rem; background: white; color: var(--dark); transition: 0.3s;
+            height: 50px; border: 1px solid #e2e8f0; padding: 10px 15px; 
+            border-radius: 12px; font-weight: 600; font-size: 0.95rem; 
+            background: white; color: var(--dark);
         }
-        .form-select:focus, .form-control:focus { 
-            outline: none; border-color: var(--primary); 
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); 
-        }
+        .form-select:focus, .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         
         .btn-main {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white; width: 100%; padding: 16px;
-            border-radius: 20px; font-weight: 800; border: none;
-            text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4); margin-top: 10px;
-            transition: transform 0.2s;
+            background: var(--primary); color: white; width: 100%; height: 55px;
+            border-radius: 14px; font-weight: 800; border: none;
+            text-transform: uppercase; letter-spacing: 0.5px; font-size: 1rem;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3); margin-top: 10px;
         }
-        .btn-main:active { transform: scale(0.96); }
+        .btn-main:active { transform: scale(0.98); }
 
-        /* FOOTER */
-        .footer-credit { margin-top: 25px; font-size: 0.7rem; color: #64748b; font-weight: 600; opacity: 0.8; }
-        .footer-credit span { color: var(--primary); font-weight: 800; }
-        .logout-btn { color: #ef4444; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .footer-credit { margin-top: 25px; font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+        .footer-credit span { color: var(--primary); font-weight: 700; }
+        .logout-btn { color: #EF4444; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; }
 
-        /* LOGIN MODAL */
-        .modal-overlay { 
-            position: fixed; inset: 0; background: rgba(224, 231, 255, 0.8); 
-            backdrop-filter: blur(15px); z-index: 3000; 
-            display: none; align-items: center; justify-content: center; 
-        }
+        /* MODALS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         .modal-card { 
-            background: white; width: 90%; max-width: 340px; padding: 40px 30px; 
-            border-radius: 35px; text-align: center; 
-            box-shadow: 0 30px 60px -15px rgba(79, 70, 229, 0.2); 
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; width: 100%; max-width: 350px; padding: 30px; 
+            border-radius: 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
         }
+        
+        .badge-id { font-size: 1.1rem; padding: 6px 16px; border-radius: 50px; background: #0F172A; color: white; display: inline-block; margin-bottom: 20px; font-weight: 700; }
+        .details-box { background: #F1F5F9; padding: 15px; border-radius: 16px; margin: 10px 0 20px 0; text-align: left; font-size: 0.9rem; border: 1px solid #E2E8F0; }
+        .d-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .val { font-weight: 700; color: var(--dark); }
+        
+        .action-grid { display: grid; gap: 10px; margin-top: 15px; }
+        .btn-act { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bg-in { background: var(--success); } .bg-out { background: var(--error); } .bg-done { background: #3B82F6; }
 
-        /* Result Modal Specifics */
-        .badge-id { 
-            font-size: 1.2rem; padding: 10px 25px; border-radius: 50px; 
-            background: var(--dark); color: white; display: inline-block; 
-            margin-bottom: 25px; font-weight: 700; letter-spacing: 1px;
-        }
-        .bg-in { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } 
-        .bg-out { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; } 
-        .bg-done { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
-
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #loginModal { z-index: 3000; }
     </style>
 </head>
 <body>
 
-    <div id="userPill" class="user-pill" style="display:none;">
-        <div class="user-dot"></div> <span id="userEmailDisplay">Connecting...</span>
-    </div>
-
     <div class="text-center">
         <div class="brand-title">SCOUTPASS</div>
-        <p class="small text-muted fw-bold">EVENT COMMANDER</p>
+        <div class="brand-sub" id="userDisplay">Loading System...</div>
     </div>
 
     <div class="cam-wrapper"><div id="reader"></div></div>
@@ -152,58 +114,46 @@
         </select>
 
         <form autocomplete="off" onsubmit="return false;">
-            <input autocomplete="false" name="hidden" type="text" style="display:none;">
+            <input type="text" style="display:none">
+            <input type="password" style="display:none">
             <input type="text" class="form-control mb-3" id="manualInput" 
                    placeholder="Enter ID Manually" 
                    autocomplete="new-password" 
-                   name="unique_scout_id_field_v18">
+                   name="scout_id_unique_field">
         </form>
 
         <button class="btn-main" onclick="manualSubmit()">
-            <i class="bi bi-qr-code-scan me-2"></i> SCAN NOW
+            <i class="bi bi-qr-code-scan me-2"></i> SCAN / SUBMIT
         </button>
 
         <div class="text-center">
-            <div class="footer-credit">Designed and Developed by <br><span>Madhawa Basnayake</span></div>
-            <div class="logout-btn" onclick="logout()">Logout</div>
+            <div class="footer-credit">Designed and Developed by <span>Madhawa Basnayake</span></div>
+            <div class="logout-btn" onclick="logout()">Logout Session</div>
         </div>
     </div>
 
     <div class="modal-overlay" id="loginModal">
-        <div class="modal-card">
-            <div class="mb-4">
-                <span style="font-size: 3rem;">👋</span>
-            </div>
-            <h3 class="fw-bold mb-2">Welcome Back</h3>
-            <p class="text-muted small mb-4">Please login to access the scanner</p>
-            
-            <div class="text-start mb-3">
-                <input type="email" id="loginEmail" class="form-control" placeholder="name@scout.lk">
-            </div>
-            <div class="text-start mb-4">
-                <input type="password" id="loginPass" class="form-control" placeholder="Password">
-            </div>
-            
-            <button class="btn-main mt-0 shadow-lg" onclick="performLogin()">LOGIN SYSTEM</button>
+        <div class="modal-card animate__animated animate__fadeIn">
+            <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
+            <h3 class="fw-bold mb-4 mt-3">OFFICER LOGIN</h3>
+            <div class="text-start mb-3"><input type="email" id="loginEmail" class="form-control" placeholder="Email"></div>
+            <div class="text-start mb-4"><input type="password" id="loginPass" class="form-control" placeholder="Password"></div>
+            <button class="btn-main mt-0" onclick="performLogin()">ACCESS SYSTEM</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="scanModal">
-        <div class="modal-card">
-            <div class="d-flex justify-content-center mb-3">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" width="80" alt="User">
-            </div>
-            
-            <h3 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h3>
+        <div class="modal-card animate__animated animate__zoomIn">
+            <h2 id="mName" style="font-weight: 800; color: var(--dark); margin-bottom: 5px;">...</h2>
             <div class="badge-id" id="mID">...</div>
 
-            <div style="background: #F8FAFC; padding: 15px; border-radius: 20px; text-align: left; margin-bottom: 20px;" id="heavyDetails">
-                <div class="d-flex justify-content-between mb-2"><small class="fw-bold text-muted">Medical</small><b class="text-danger" id="mMed">-</b></div>
-                <div class="d-flex justify-content-between mb-2"><small class="fw-bold text-muted">Emergency</small><b id="mEmg">-</b></div>
-                <div class="d-flex justify-content-between"><small class="fw-bold text-muted">Leader</small><b id="mLdr">-</b></div>
+            <div class="details-box" id="heavyDetails" style="display:none;">
+                <div class="d-row"><span class="text-muted fw-bold">Medical</span><span class="val text-danger" id="mMed">-</span></div>
+                <div class="d-row"><span class="text-muted fw-bold">Emergency</span><span class="val" id="mEmg">-</span></div>
+                <div class="d-row"><span class="text-muted fw-bold">Leader</span><span class="val" id="mLdr">-</span></div>
             </div>
 
-            <div id="actionButtons" style="display: grid; gap: 10px;"></div>
+            <div id="actionButtons" class="action-grid"></div>
             <button class="btn btn-light text-muted w-100 mt-4 fw-bold py-3 rounded-4" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
@@ -214,27 +164,11 @@
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, get, push, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. MAIN DATABASE
-    const mainConfig = { 
-        apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", 
-        authDomain: "scoutpassinfo.firebaseapp.com", 
-        databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", 
-        projectId: "scoutpassinfo", 
-        storageBucket: "scoutpassinfo.firebasestorage.app", 
-        messagingSenderId: "275495941550", 
-        appId: "1:275495941550:web:516a5b1429dbf8d80e443f" 
-    };
+    // 1. MAIN DB
+    const mainConfig = { apiKey: "AIzaSyDJtFyERA8CKD683DdCUgRKoO7CalB403Q", authDomain: "scoutpassinfo.firebaseapp.com", databaseURL: "https://scoutpassinfo-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpassinfo", storageBucket: "scoutpassinfo.firebasestorage.app", messagingSenderId: "275495941550", appId: "1:275495941550:web:516a5b1429dbf8d80e443f" };
     
-    // 2. PARENT DATABASE
-    const parentConfig = {
-        apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90",
-        authDomain: "scoutpass-2db.firebaseapp.com",
-        databaseURL: "https://scoutpass-2db-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "scoutpass-2db",
-        storageBucket: "scoutpass-2db.firebasestorage.app",
-        messagingSenderId: "966417461714",
-        appId: "1:966417461714:web:084eb12236acfa4848980b"
-    };
+    // 2. PARENT DB
+    const parentConfig = { apiKey: "AIzaSyB5NtCi7iTacmUBkru8rYhDPqmv26KFo90", authDomain: "scoutpass-2db.firebaseapp.com", databaseURL: "https://scoutpass-2db-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "scoutpass-2db", storageBucket: "scoutpass-2db.firebasestorage.app", messagingSenderId: "966417461714", appId: "1:966417461714:web:084eb12236acfa4848980b" };
 
     const mainApp = initializeApp(mainConfig, "Main");
     const parentApp = initializeApp(parentConfig, "Parent");
@@ -242,69 +176,42 @@
     const dbParent = getDatabase(parentApp);
     const auth = getAuth(mainApp);
 
-    let html5QrCode = null;
-    let currentEvent = null;
-    let isProcessing = false;
-    let lastScannedCode = null;
-    let lastScanTime = 0;
-    let loggedInUserEmail = "";
+    let html5QrCode = null, currentEvent = null, isProcessing = false, lastScannedCode = null, lastScanTime = 0, loggedInUserEmail = "";
 
-    // --- AUTH ---
+    // AUTH
     onAuthStateChanged(auth, u => {
         if (u) {
             loggedInUserEmail = u.email;
-            document.getElementById('userEmailDisplay').innerText = u.email;
-            document.getElementById('userPill').style.display = 'flex';
+            document.getElementById('userDisplay').innerText = `Officer: ${u.email.split('@')[0]}`;
             document.getElementById('loginModal').style.display = 'none';
             initScanner();
         } else {
-            document.getElementById('userPill').style.display = 'none';
+            document.getElementById('userDisplay').innerText = "Auth Required";
             document.getElementById('loginModal').style.display = 'flex';
         }
     });
 
     window.performLogin = async () => {
-        const e = document.getElementById('loginEmail').value;
-        const p = document.getElementById('loginPass').value;
-        if (!e || !p) return Swal.fire('Oops!', 'Please enter details', 'warning');
-        try { await signInWithEmailAndPassword(auth, e, p); } 
-        catch (err) { Swal.fire('Error', 'Wrong email or password', 'error'); }
+        const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
+        if (!e || !p) return Swal.fire('Error', 'Credentials Required', 'warning');
+        try { await signInWithEmailAndPassword(auth, e, p); } catch { Swal.fire('Error', 'Invalid Login', 'error'); }
     };
 
-    window.logout = () => {
-        Swal.fire({
-            title: 'Logout?',
-            text: "You will need to login again",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#4F46E5',
-            confirmButtonText: 'Yes, Logout'
-        }).then((result) => {
-            if (result.isConfirmed) signOut(auth).then(()=>location.reload());
-        })
-    };
+    window.logout = () => { if(confirm("Logout?")) signOut(auth).then(()=>location.reload()); };
 
-    // --- CAMERA ---
+    // CAMERA
     async function initScanner() {
         try {
             const devices = await Html5Qrcode.getCameras();
-            const sel = document.getElementById('camList');
-            sel.innerHTML = '';
+            const sel = document.getElementById('camList'); sel.innerHTML = '';
             if (devices && devices.length) {
-                devices.forEach(cam => {
-                    const opt = document.createElement('option');
-                    opt.value = cam.id; opt.text = cam.label || `Camera ${sel.length+1}`;
-                    sel.appendChild(opt);
-                });
+                devices.forEach(cam => { const opt = document.createElement('option'); opt.value = cam.id; opt.text = cam.label || `Camera ${sel.length+1}`; sel.appendChild(opt); });
                 startScanner(devices[devices.length-1].id);
             } else { sel.innerHTML = '<option>No Camera Found</option>'; }
         } catch(e) { console.error(e); }
     }
 
-    async function switchCamera(camId) {
-        if(html5QrCode && html5QrCode.isScanning) await html5QrCode.stop();
-        startScanner(camId);
-    }
+    async function switchCamera(camId) { if(html5QrCode && html5QrCode.isScanning) await html5QrCode.stop(); startScanner(camId); }
 
     function startScanner(camId) {
         html5QrCode = new Html5Qrcode("reader");
@@ -312,23 +219,23 @@
         .catch(err => console.log(err));
     }
 
-    // --- EVENTS ---
+    // EVENTS
     onValue(ref(dbMain, 'events'), s => {
         const sel = document.getElementById('eventSelect');
+        const currentVal = sel.value; // Store selection
         sel.innerHTML = '<option value="" disabled selected>Select Event</option>';
         if(s.exists()) {
             Object.values(s.val()).forEach(evt => {
                 if(evt.visible !== false) {
-                    const opt = document.createElement('option');
-                    opt.value = JSON.stringify(evt); opt.text = evt.name;
-                    sel.appendChild(opt);
+                    const opt = document.createElement('option'); opt.value = JSON.stringify(evt); opt.text = evt.name; sel.appendChild(opt);
                 }
             });
+            if(currentVal) sel.value = currentVal; // Restore
         }
     });
     window.setEvent = () => currentEvent = JSON.parse(document.getElementById('eventSelect').value);
 
-    // --- SCAN LOGIC ---
+    // SCAN LOGIC
     async function onScanSuccess(decodedText) {
         if(isProcessing) return;
         const now = Date.now();
@@ -341,8 +248,7 @@
             return;
         }
 
-        isProcessing = true;
-        html5QrCode.pause();
+        isProcessing = true; html5QrCode.pause();
         const id = decodedText.trim().replace(/[.#$/[\]]/g, '_');
 
         try {
@@ -365,41 +271,32 @@
 
             const btnBox = document.getElementById('actionButtons'); btnBox.innerHTML='';
             currentEvent.buttons.forEach(btn => {
-                const b = document.createElement('button');
-                b.innerText = btn;
-                let cls = 'bg-done';
-                if(btn==='IN') cls='bg-in'; if(btn==='OUT') cls='bg-out';
-                b.className = `btn-act ${cls}`;
+                const b = document.createElement('button'); b.innerText = btn;
+                b.className = `btn-act ${btn==='IN'?'bg-in':btn==='OUT'?'bg-out':'bg-done'}`;
                 b.onclick = () => processLog(basic.id, basic.name, btn);
                 btnBox.appendChild(b);
             });
 
             document.getElementById('scanModal').style.display = 'flex';
-
         } catch(e) {
             Swal.fire({icon:'error', title:'Invalid ID', timer:800, showConfirmButton:false});
             setTimeout(resume, 1000);
         }
     }
 
-    // --- DUAL WRITE LOGIC ---
+    // PROCESS LOG
     async function processLog(id, name, action) {
         document.getElementById('scanModal').style.display = 'none';
         
-        const mainUpdates = {};
-        const key = push(ref(dbMain, 'logs')).key;
         const timestamp = serverTimestamp();
+        const key = push(ref(dbMain, 'logs')).key;
         
-        mainUpdates[`logs/${key}`] = { 
-            scoutID: id, scoutName: name, event: currentEvent.name, action, 
-            timestamp: timestamp, scanner: loggedInUserEmail 
-        };
+        const mainUpdates = {};
+        mainUpdates[`logs/${key}`] = { scoutID: id, scoutName: name, event: currentEvent.name, action, timestamp, scanner: loggedInUserEmail };
         mainUpdates['stats/total_scans'] = increment(1);
         mainUpdates[`stats/events/${currentEvent.name}/${action.toLowerCase()}`] = increment(1);
-
         if(currentEvent.category === 'ENTRANCE') {
-            if(action==='IN') mainUpdates['stats/present_now'] = increment(1);
-            if(action==='OUT') mainUpdates['stats/present_now'] = increment(-1);
+            mainUpdates['stats/present_now'] = increment(action==='IN' ? 1 : -1);
         } else {
             mainUpdates[`stats/events/${currentEvent.name}/completed`] = increment(1);
         }
@@ -412,44 +309,23 @@
 
         try {
             await update(ref(dbMain), mainUpdates);
-            
-            // --- CUTE NOTIFICATIONS ---
-            let bg = '#F43F5E'; // Red-ish Pink
-            let title = 'Recorded (Main Only)';
+            let toastColor = '#dc2626'; // RED
+            let toastTitle = "Recorded (Main Only)";
             
             try {
                 await update(ref(dbParent), parentUpdates);
-                bg = '#10B981'; // Nice Green
-                title = 'Perfectly Synced! ✨';
-            } catch(e) { console.warn("Parent Sync Error"); }
+                toastColor = '#16a34a'; // GREEN
+                toastTitle = "Synced to Both DBs";
+            } catch(e) { console.warn("Sync Error"); }
 
-            Swal.fire({
-                toast: true,
-                position: 'top',
-                title: title,
-                iconColor: 'white',
-                customClass: { popup: 'colored-toast' },
-                showConfirmButton: false,
-                timer: 1500,
-                background: bg,
-                color: '#fff',
-                didOpen: (toast) => {
-                    toast.style.borderRadius = '20px';
-                    toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
-                }
-            });
-
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: toastTitle, timer: 1500, showConfirmButton: false, background: toastColor, color: '#fff' });
         } catch (e) {
             Swal.fire({toast:true, position:'top', icon:'error', title:'Main DB Failed'});
         }
         resume();
     }
 
-    // UTILS
-    window.manualSubmit = () => {
-        const v = document.getElementById('manualInput').value;
-        if(v) onScanSuccess(v); else Swal.fire({toast:true, icon:'warning', title:'Enter ID'});
-    };
+    window.manualSubmit = () => { const v = document.getElementById('manualInput').value; if(v) onScanSuccess(v); };
     window.closeModal = () => { document.getElementById('scanModal').style.display='none'; resume(); };
     function resume() { isProcessing=false; html5QrCode.resume(); }
     window.switchCamera = switchCamera; window.performLogin = performLogin; window.logout = logout;
